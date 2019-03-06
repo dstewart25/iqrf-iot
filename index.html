@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>IQRF Project</title>
+	<script src="https://sdk.amazonaws.com/js/aws-sdk-2.283.1.min.js"></script>
+	<script type="text/javascript">
+		// Initialize the Amazon Cognito credentials provider
+		AWS.config.region = 'us-east-2'; // Region
+		AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+			IdentityPoolId: 'us-east-2:6d872040-a552-4134-9556-5ff8bf7fe655',
+		});
+		
+		/// Prepare to call Lambda function
+		lambda = new AWS.Lambda({region: 'us-east-2', apiVersion: '2015-03-31'});
+		var pullParams = {
+			FunctionName : 'TestFunction',
+			InvocationType : 'RequestResponse',
+			LogType : 'None'
+		};
+		
+		function initiatePull() {
+			// Call the Lambda function to collect the iqrf results
+			lambda.invoke(pullParams, function(err, data) {
+				if (err) {
+					prompt(err);
+				} else {
+					iqrfResults = JSON.parse(data.Payload);
+					displayPull();
+				}
+			});
+		};
+
+		function displayPull() {
+			//prompt(JSON.stringify(pullResults));
+			document.getElementById("time1").innerHTML = iqrfResults[8].time;
+			
+			for(var i=0; i<iqrfResults.length; i++) {
+				document.getElementById("test").innerHTML += iqrfResults[i].temperature;
+			}
+		};
+		
+		initiatePull();
+	</script>
+</head>
+<body>
+
+<div align="center">
+<h2>IQRF Data Table</h2> <br>
+    <fieldset style="width:50%">
+        <legend>Temperature:</legend>
+          <form action="/action_page.php">
+            Temperature Threshold: <input type="text" name="tempThresh" placeholder="Celsius"><br>
+            Set Alerts For Temperature: 
+            <input type="radio" name="tempBtn" value="over">Over
+            <input type="radio" name="tempBtn" value="under">Under<br><br>
+            Photometric Threshold: <input type="text" name="photoThresh" placeholder="Lux"><br>
+            Set Alerts For Photometric: 
+            <input type="radio" name="threshBtn" value="over">Over
+            <input type="radio" name="threshBtn" value="under">Under<br><br>
+            <input type="submit" value="Submit" onclick="initiatePull();"><br>
+            <!--<button onclick="setCookies(TempThresh, PhotoThresh);">Set Thresholds</button><br><br>-->
+
+              <script>
+                  function setCookies(temp, photo) {
+                  	var tempData = document.getElementById('tempThresh').value;
+                    var photoData = document.getElementById('photoThresh').value;
+
+                    document.cookie = "tempThresh=tempData"
+                    document.cookie = "photoThresh=photo"
+                  }
+
+                  function getCookies() {
+                    document.getElementById("mytext").value = "tempThresh";
+                    document.getElementById("mytext").value = "photoThresh";
+
+                  }
+              </script>
+          </form>
+    </fieldset><br>
+
+  <table style="width:55%" border="1">
+    <tr>
+      <th>
+        <div align="center">Time (YYYY-MM-DDHH:MM:SS)</div>
+      </th>
+      <th>
+        <div align="center">Temperature (C)</div>
+      </th> 
+      <th>
+        <div align="center">Light Level (Lux)</div>
+      </th>
+    </tr>
+
+    <tr>
+      <td>
+        <div align="center" id="time0">YYYY-MM-DDHH:MM:SS</div>
+      </td>
+      <td>
+        <div align="center">Test Temp</div>
+      </td> 
+      <td>
+        <div align="center">Test Light</div>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <div align="center" id="time1">YYYY-MM-DDHH:MM:SS</div>
+      </td>
+      <td>
+        <div align="center">Test Temp</div>
+      </td> 
+      <td>
+        <div align="center">Test Light</div>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <div align="center" id="time2">YYYY-MM-DDHH:MM:SS</div>
+      </td>
+      <td>
+        <div align="center">Test Temp</div>
+      </td> 
+      <td>
+        <div align="center">Test Light</div>
+      </td>
+    </tr>
+  </table>
+  <button type="button" onclick="initiatePull();">Test Stuff!</button>
+  <p id="test">test</p>
+</body>
+</html>
